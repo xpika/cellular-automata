@@ -2,6 +2,7 @@ import System.Cmd
 import Data.List
 import Control.Monad
 import System.IO
+import System.Environment
 
 hanging_list' total_size list = hanging_list ((total_size - length list) `div` 2) list
 
@@ -11,11 +12,22 @@ hanging_list hang_size list = end ++ map Just list ++ end
 windowify window_size list | length list < window_size = []
                            | otherwise = take window_size list : windowify window_size (tail list)
 
+
+rotateList _ [] = []
+rotateList 0 xs = xs
+rotateList n (x:xs) = rotateList (n-1) (xs++[x])
+
+windowify' window_size list = map (take window_size) $ (\x -> last x : init x) $ take (length list) $ iterate (rotateList 1) list 
+
 windowMap window_size f list  = map f $ windowify window_size list
+
+windowMap' window_size f list  = map f $ windowify' window_size list
 
 initState = [True]
 
 initState' = stateHelper'''' rule30 initState 
+
+initState'' = stateHelper $ hanging_list 32 [True]
 
 iterateRule rule state = iterate (stateHelper'''' rule) state
 
@@ -45,21 +57,27 @@ rule90 [False,True ,False] = False
 rule90 [False,False,True ] = True
 rule90 [False,False,False] = False
 
-renderIterations iterations = renderIterations' $ map (\x -> hanging_list (lastIterationLength - length x `div` 2) x) iterations 
+renderIterations iterations = renderIterations' $ map (\x -> hanging_list' lastIterationLength x) iterations 
  where lastIterationLength = length $ last iterations
 
 renderIterations' = renderIterations'' . map stateHelper
 
-renderIterations'' list = map (map convertChar) list
+renderIterations'' list = map renderIterations''' list
+
+renderIterations''' list = (map convertChar) list
   where convertChar True = '#'
         convertChar False = '.'
+
+
+eg rule = mapM_  (\x -> do { putStrLn (renderIterations''' x)} ) (iterate (windowMap' 3 rule) (stateHelper $ hanging_list 64 [True]))
 
 main = do 
        renderRule 10 rule30
        putStrLn ""
        renderRule 10 rule90
+       
 
 renderRule iterations rule = do 
-       mapM_ putStrLn (renderIterations $ take iterations $  iterateRule rule initState)
+       mapM_ putStrLn (renderIterations $ take iterations $ iterateRule rule initState)
 
 
