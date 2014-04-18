@@ -57,6 +57,16 @@ rule90 [False,True ,False] = False
 rule90 [False,False,True ] = True
 rule90 [False,False,False] = False
 
+
+rule110 [True ,True ,True ] = False
+rule110 [True ,True ,False] = True
+rule110 [True ,False,True ] = True
+rule110 [True ,False,False] = False
+rule110 [False,True ,True ] = True
+rule110 [False,True ,False] = True
+rule110 [False,False,True ] = True
+rule110 [False,False,False] = False
+
 renderIterations iterations = renderIterations' $ map (\x -> hanging_list' lastIterationLength x) iterations 
  where lastIterationLength = length $ last iterations
 
@@ -75,7 +85,8 @@ main = do
        renderRule 10 rule30
        putStrLn ""
        renderRule 10 rule90
-       
+       putStrLn ""
+       renderRule 10 rule110
 
 renderRule iterations rule = do 
        mapM_ putStrLn (renderIterations $ take iterations $ iterateRule rule initState)
