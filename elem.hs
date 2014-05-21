@@ -97,6 +97,6 @@ encrypt :: [Bool] -> [Bool]
 encrypt y = iterate (\x -> stateHelper'''' rule30 x) y !! 3
 
 decrypt :: [Bool] -> [Bool]
-decrypt y = (\(Just x)->x) $ find (\x -> encrypt x == y)  $ concatMap (\x -> replicateM x [True,False]) [1..]
+decrypt y = (\(Just x)->x) $ find (\x -> encrypt x == y) $ concatMap (\x -> replicateM x [True,False]) [1..]
 
 
