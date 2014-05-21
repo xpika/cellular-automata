@@ -86,9 +86,17 @@ main = do
        putStrLn ""
        renderRule 10 rule90
        putStrLn ""
-       renderRule 10 rule110
+       renderRule 150 rule110
 
 renderRule iterations rule = do 
        mapM_ putStrLn (renderIterations $ take iterations $ iterateRule rule initState)
+
+
+-- use rule30 as encrytion
+encrypt :: [Bool] -> [Bool]
+encrypt y = iterate (\x -> stateHelper'''' rule30 x) y !! 3
+
+decrypt :: [Bool] -> [Bool]
+decrypt y = (\(Just x)->x) $ find (\x -> encrypt x == y)  $ concatMap (\x -> replicateM x [True,False]) [1..]
 
 
