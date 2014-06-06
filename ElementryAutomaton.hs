@@ -1,3 +1,4 @@
+{-# LANGUAGE NoMonomorphismRestriction #-}
 module ElementryAutomaton where
 
 import System.Cmd
@@ -36,8 +37,8 @@ windowify window_size list | length list < window_size = []
 
 
 windowMap' window_size f list = map f $ windowify' window_size list
-windowify' window_size list = map Data.Foldable.toList $ fmap (Data.Sequence.take window_size) $ (\x -> last x : init x) $ take (length list) $ iterate (rotateList 1) (Data.Sequence.fromList list)
-eg' rule = iterate (windowMap' 3 rule) (maybeToBool $ hanging_list' 600 initState)
+windowify' window_size list =  fmap (Data.Sequence.take window_size) $ (\x -> last x : init x) $ take (length list) $ iterate (rotateList 1) (Data.Sequence.fromList list)
+eg' rule = iterate (windowMap' 3 rule) (maybeToBool $ hanging_list' 639 initState)
 
 --rendering
 
@@ -92,17 +93,8 @@ rule90 [False,False,False] = False
 rule110 [True,True,True] = False
 rule110 [_,False,False] = False     
 rule110 _ = True
-{-
-rule110 [True ,True ,True] = False
-rule110 [True ,False,False] = False
-rule110 [False,False,False] = False       
 
-rule110 [False,True ,True] = True
-rule110 [True ,True ,False] = True
-rule110 [False,True ,False] = True
-rule110 [False,False,True] = True
-rule110 [True ,False,True] = True
--}
+rule110' =  rule110 .  Data.Foldable.toList
 
 -- use rule30 as encrytion
 encrypt :: [Bool] -> [Bool]

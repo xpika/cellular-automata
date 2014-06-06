@@ -4,26 +4,25 @@ import Graphics.UI.SDL as SDL
 import Control.Monad
 import Foreign.Storable
 import Foreign.Ptr
+import Data.Foldable (toList)
 
 import ElementryAutomaton hiding (main)
 
 createColor screen r g b = SDL.mapRGB (SDL.surfaceGetPixelFormat screen) r g b
-
-data Player = PlayerFactory {
-                     xy :: (Int,Int)
-                    ,isDead :: Bool}
-
+data Player = PlayerFactory {xy :: (Int,Int) ,isDead :: Bool}
+width = 640
+height = 480
 gameinit = do
      SDL.init [SDL.InitEverything]
-     SDL.setVideoMode 640 480 32 []
+     SDL.setVideoMode width height 32 [SDL.HWSurface]
      SDL.setCaption "Video Test!" "video test"
      mainscreen <- getVideoSurface
      initcolor <- createColor mainscreen 0 0 0
-    
      playercolor <-  createColor mainscreen 255 255 255
-     return (PlayerFactory (320,240) False, eg' rule110, mainscreen,playercolor,initcolor)
+     pixels <- castPtr `liftM` surfaceGetPixels mainscreen
+     return (PlayerFactory (320,240) False, eg' rule110' , mainscreen,playercolor,initcolor,pixels,surfaceGetWidth mainscreen)
      
-ruleNUmbers = cycle (replicateM 300 [True,False])
+ruleNumbers = cycle (replicateM 20 [True,False])
 
 putPixel32 :: Int -> Int -> Pixel -> Surface -> IO ()
 putPixel32 x y (Pixel pixel) s = do
@@ -40,23 +39,19 @@ main = do
        print "start"
        gameinit >>= mainLoop >> gameend
     
-mainLoop (player,dat,mainscreen,playercolor,initcolor) = do
-      let surfaceWidth = surfaceGetWidth mainscreen
-      pixels <- castPtr `liftM` surfaceGetPixels mainscreen
-      forM_ (zip [0..] (take 450 $ dat )) ( \(x1,x2) ->
-        forM_ (zip [0..] x2) ( \(y1,y2) ->
-            if y2 then putPixel32' (y1+10) (x1+10) (Pixel 0xFFFFFF) pixels surfaceWidth
-                  else putPixel32' (y1+10) (x1+10) (Pixel 0x333333) pixels surfaceWidth
-            )
+mainLoop (player,dat,mainscreen,playercolor,initcolor,pixels,surfaceWidth) = do
+      forM_ (zip [0..] (take 479 $ dat)) ( \(x1,x2) ->
+        forM_ (  zip [0..] x2) ( \(y1,y2) ->
+            if y2 then putPixel32' y1 x1 (Pixel 0xFFFFFF) pixels surfaceWidth
+                  else putPixel32' y1 x1 (Pixel 0x000000) pixels surfaceWidth
+        )
        )
-      -- event <- SDL.waitEvent
+       
       event <- SDL.pollEvent
       SDL.flip mainscreen
       result (checkEvent event)
      where
-     checkEvent (KeyDown (Keysym SDLK_UP _ _)) = (player { xy = ((fst(xy player)),(snd(xy player)) - 6) })
-     checkEvent (KeyDown (Keysym SDLK_DOWN _ _)) = (player { xy = ((fst(xy player)),(snd(xy player)) + 6) })
      checkEvent (KeyUp (Keysym SDLK_ESCAPE _ _)) = (player { isDead = True })
      checkEvent _ = player
      result obj | isDead obj == True = return ()
-                | otherwise = mainLoop (obj,drop 1 dat,mainscreen,playercolor,initcolor)
+                | otherwise = mainLoop (obj,drop 1 dat,mainscreen,playercolor,initcolor,pixels,surfaceWidth)
