@@ -1,3 +1,5 @@
+module ElementryAutomaton where
+
 import System.Cmd
 import Data.List
 import Control.Monad
@@ -57,7 +59,6 @@ rule90 [False,True ,False] = False
 rule90 [False,False,True ] = True
 rule90 [False,False,False] = False
 
-
 rule110 [True ,True ,True ] = False
 rule110 [True ,True ,False] = True
 rule110 [True ,False,True ] = True
@@ -80,7 +81,7 @@ renderIterations''' list = (map convertChar) list
 
 
 eg rule = mapM_  (\x -> do { putStrLn (renderIterations''' x)} ) (iterate (windowMap' 3 rule) (stateHelper $ hanging_list 64 [True]))
-
+eg' rule = iterate (windowMap' 3 rule) (stateHelper $ hanging_list 300 [True])
 main = do 
        renderRule 10 rule30
        putStrLn ""
