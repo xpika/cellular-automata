@@ -10,51 +10,47 @@ import ElementryAutomaton hiding (main)
 createColor screen r g b = SDL.mapRGB (SDL.surfaceGetPixelFormat screen) r g b
 
 data Player = PlayerFactory {
-                    xy :: (Int,Int),
-                    isDead :: Bool
-                    }
+                     xy :: (Int,Int)
+                    ,isDead :: Bool}
 
 gameinit = do
      SDL.init [SDL.InitEverything]
      SDL.setVideoMode 640 480 32 []
      SDL.setCaption "Video Test!" "video test"
-     image <- createRGBSurface [] 640 480 16 0 0 0 0
-     return (PlayerFactory (320,240) False,image)    
+     mainscreen <- getVideoSurface
+     initcolor <- createColor mainscreen 0 0 0
+    
+     playercolor <-  createColor mainscreen 255 255 255
+     return (PlayerFactory (320,240) False, eg' rule110, mainscreen,playercolor,initcolor)
+     
+ruleNUmbers = cycle (replicateM 300 [True,False])
 
 putPixel32 :: Int -> Int -> Pixel -> Surface -> IO ()
 putPixel32 x y (Pixel pixel) s = do
     pixels <- castPtr `liftM` surfaceGetPixels s
     pokeElemOff pixels ((y * (surfaceGetWidth s)) + x) pixel	 
+    
+
+putPixel32' x y (Pixel pixel) pixels width = do
+    pokeElemOff pixels ((y * width) + x) pixel	 
 
 gameend = SDL.quit
 
 main = do
        print "start"
-       -- line <- getLine 
-       -- print line
        gameinit >>= mainLoop >> gameend
-
-initscreen = do
-    mainscreen <- getVideoSurface
-    initcolor <- createColor mainscreen 0 0 0
-    SDL.fillRect mainscreen (Just(SDL.Rect 0 0 640 480)) initcolor
-
-mainLoop (player,image) = do
-      mainscreen <-  getVideoSurface
-      initscreen
-      playercolor <-  createColor mainscreen 255 255 255
-      
-      forM_ (zip [1..] (take 300 $ eg' rule110)) ( \(x1,x2) ->
-        forM_ (zip [1..] x2) ( \(y1,y2) ->
-            if y2 then putPixel32 (y1) (x1+1) (Pixel 0xFFFFFF) mainscreen
-                  else putPixel32 (y1) (x1+1) (Pixel 0xAAAAAA) mainscreen
+    
+mainLoop (player,dat,mainscreen,playercolor,initcolor) = do
+      let surfaceWidth = surfaceGetWidth mainscreen
+      pixels <- castPtr `liftM` surfaceGetPixels mainscreen
+      forM_ (zip [0..] (take 450 $ dat )) ( \(x1,x2) ->
+        forM_ (zip [0..] x2) ( \(y1,y2) ->
+            if y2 then putPixel32' (y1+10) (x1+10) (Pixel 0xFFFFFF) pixels surfaceWidth
+                  else putPixel32' (y1+10) (x1+10) (Pixel 0x333333) pixels surfaceWidth
             )
-       )     
-      putPixel32 20 20 (Pixel 0xFFFFFF) image
-      putPixel32 21 21 (Pixel 0xFFFFFF) image
-    --  blitSurface image Nothing mainscreen Nothing
-     -- SDL.fillRect mainscreen (Just(SDL.Rect (fst(xy player)) (snd(xy player)) 32 32)) playercolor
-      event <- SDL.waitEventBlocking
+       )
+      -- event <- SDL.waitEvent
+      event <- SDL.pollEvent
       SDL.flip mainscreen
       result (checkEvent event)
      where
@@ -63,4 +59,4 @@ mainLoop (player,image) = do
      checkEvent (KeyUp (Keysym SDLK_ESCAPE _ _)) = (player { isDead = True })
      checkEvent _ = player
      result obj | isDead obj == True = return ()
-                | otherwise = mainLoop (obj,image)
+                | otherwise = mainLoop (obj,drop 1 dat,mainscreen,playercolor,initcolor)
