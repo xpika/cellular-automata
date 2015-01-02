@@ -45,7 +45,7 @@ eg' n rule = iterate (windowMap' 3 (rule . Data.Foldable.toList ) ) (maybeToBool
 windowMap window_size f list = map f $ windowify window_size list
 eg rule = mapM_  (\x -> do { putStrLn (renderIterations''' x)} ) (iterate (windowMap' 3 rule) (maybeToBool $ hanging_list 64 [True]))
 
-renderIterations num iterations = renderIterations' $ map (\x -> hanging_list' num x) iterations
+renderIterations num iterations = renderIterations' $ map (\x -> hanging_list' (num*2) x) iterations
  
 renderIterations' = renderIterations'' . map maybeToBool
 renderIterations'' list = map renderIterations''' list
@@ -63,12 +63,18 @@ renderRule iterations rule = do
   where iterateRule rule state = iterate (stateHelper'''' rule) state        
     
             
-main = do 
-  renderRule 10 rule30
-  putStrLn ""
-  renderRule 10 rule90
-  putStrLn ""
-  renderRule 30 rule110       
+main = do
+ renderRule 10 rule30
+ putStrLn ""
+ renderRule 10 rule90
+ putStrLn ""
+ renderRule 30 rule110
+ let input = [True,False,True,True]
+ print input
+ print (encrypt input)
+ print ((decrypt . encrypt) input)
+  
+ 
        
 -- rules
 rule30 [True ,True ,True] = False
@@ -95,12 +101,13 @@ rule110 [_,False,False] = False
 rule110 _ = True
 
 
+its = 3
 -- use rule30 as encrytion
 encrypt :: [Bool] -> [Bool]
-encrypt y = iterate (\x -> stateHelper'''' rule30 x) y !! 3
+encrypt y = iterate (\x -> stateHelper'''' rule30 x) y !! its
 
 decrypt :: [Bool] -> [Bool]
-decrypt y = (\(Just x)->x) $ find (\x -> encrypt x == y) $ concatMap (\x -> replicateM x [True,False]) [1..]
+decrypt y = (\(Just x)->x) $ find (\x -> encrypt x == y) $  replicateM (length y - (2*its)) [True,False]
 
 --other
 rolling_update f xs  = init' ++ (last:[f last])
