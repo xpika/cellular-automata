@@ -68,10 +68,7 @@ main = do
   putStrLn ""
   renderRule 10 rule90
   putStrLn ""
-  renderRule 30 rule110  
-  print  [True,False,True,True]      
-  print $ encrypt [True,False,True,True]    
-  print $ decrypt ([True,True,False,True,True,True,False,True,False,True],4)
+  renderRule 30 rule110       
        
 -- rules
 rule30 [True ,True ,True] = False
@@ -98,14 +95,12 @@ rule110 [_,False,False] = False
 rule110 _ = True
 
 
-
 -- use rule30 as encrytion
-encrypt :: [Bool] -> ([Bool],Int)
-encrypt y = (iterate (\x -> stateHelper'''' rule30 x) y !! 3,length y)
+encrypt :: [Bool] -> [Bool]
+encrypt y = iterate (\x -> stateHelper'''' rule30 x) y !! 3
 
-
-decrypt :: ([Bool],Int) -> [Bool]
-decrypt (y,len) = (\(Just x)->x) $ find (\x -> fst (encrypt x) == y) $ replicateM len [True,False]
+decrypt :: [Bool] -> [Bool]
+decrypt y = (\(Just x)->x) $ find (\x -> encrypt x == y) $ concatMap (\x -> replicateM x [True,False]) [1..]
 
 --other
 rolling_update f xs  = init' ++ (last:[f last])
