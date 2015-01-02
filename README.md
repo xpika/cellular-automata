@@ -22,8 +22,10 @@
 ...........##..#...###.....#...........
 ..........##.####.##..#...###..........
 
-*Main> encrypt [True,False,True]
-[True,True,False,True,True,True,False,True,True]
-*Main> decrypt $ encrypt [True,False,True]
-[True,False,True]
+*Main> encrypt [True,False,True,True]
+([True,True,False,True,True,True,False,True,False,True],4)
+*Main> decrypt $ encrypt [True,False,True,True]
+[True,False,True,True]
+
+
 ```
